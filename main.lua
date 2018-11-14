@@ -37,12 +37,15 @@ local currentPlayer = 1
 local selectedX, selectedY = 1, 1
 local winningPlayer = 0
 local gameOver = false
+local aiPlayer = true
 
 function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
     love.graphics.setFont(retroFont)
 
     love.window.setTitle('TicTacToe50')
+
+    math.randomseed(os.time())
 
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
@@ -78,7 +81,13 @@ function love.keypressed(key)
                 if currentPlayer == 1 then
                     grid[selectedY][selectedX] = 'X'
                     currentPlayer = 2
+
                     checkVictory()
+                    
+                    if not gameOver and aiPlayer then
+                        takeAITurn()
+                        checkVictory()
+                    end
                 else
                     grid[selectedY][selectedX] = 'O'
                     currentPlayer = 1
@@ -150,6 +159,47 @@ function checkVictory()
     checkHorizontals()
     checkVerticals()
     checkDiagonals()
+end
+
+function takeAITurn()
+    local tookTurn = false
+    local gapFound = false
+
+    -- some block of code to check if we found a gap
+    -- and then set whether we found the gap again
+    
+    -- check the horizontals
+    for y = 1, GRID_HEIGHT do
+        for x = 1, 3 do
+            if grid[y][x] == '' then
+                grid[y][x] = 'X'
+                
+                checkVictory()
+
+                grid[y][x] = ''
+
+                if gameOver then
+                    grid[y][x] = 'O'
+                    gameOver = false
+                    winningPlayer = 0
+                    currentPlayer = 1
+                    return
+                end
+            end
+        end
+    end
+    
+    -- choose a tile to place our O in randomly
+    while not tookTurn do
+        local x, y = math.random(GRID_WIDTH), math.random(GRID_HEIGHT)
+
+        if grid[y][x] == "" then
+            grid[y][x] = "O"
+            tookTurn = true
+        end
+    end
+
+    currentPlayer = 1
 end
 
 function checkHorizontals()
